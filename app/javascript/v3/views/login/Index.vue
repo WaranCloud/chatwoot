@@ -111,6 +111,12 @@ export default {
         Boolean(window.chatwootConfig.googleOAuthClientId)
       );
     },
+    showOidcLogin() {
+      return window.chatwootConfig.oidcEnabled === 'true';
+    },
+    oidcLoginLabel() {
+      return window.chatwootConfig.oidcLoginLabel || 'Continue with SSO';
+    },
     showSignupLink() {
       return (
         window.chatwootConfig.signupEnabled === 'true' ||
@@ -175,6 +181,19 @@ export default {
     }
   },
   methods: {
+    startOidcLogin() {
+      const token = document.querySelector('meta[name="csrf-token"]')?.content;
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/auth/openid_connect';
+      const field = document.createElement('input');
+      field.type = 'hidden';
+      field.name = 'authenticity_token';
+      field.value = token || '';
+      form.appendChild(field);
+      document.body.appendChild(form);
+      form.submit();
+    },
     getTranslatedMessage(key) {
       // Avoid dynamic key warning by handling each case explicitly
       switch (key) {
@@ -466,6 +485,14 @@ export default {
     >
       <div v-if="!email">
         <div class="flex flex-col gap-4">
+          <button
+            v-if="showOidcLogin"
+            type="button"
+            class="inline-flex justify-center w-full px-4 py-3 items-center bg-n-background dark:bg-n-solid-3 rounded-md shadow-sm ring-1 ring-inset ring-n-container dark:ring-n-container hover:bg-n-alpha-2 dark:hover:bg-n-alpha-2"
+            @click="startOidcLogin"
+          >
+            {{ oidcLoginLabel }}
+          </button>
           <GoogleOAuthButton
             v-if="showGoogleOAuth"
             :redirect-url="redirectUrl"
