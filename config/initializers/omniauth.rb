@@ -2,6 +2,11 @@
 # Sets the full host URL for callbacks and proper redirect handling
 OmniAuth.config.full_host = ENV.fetch('FRONTEND_URL', 'http://localhost:3000')
 
+# Caawiye fork: permit the GET request phase. devise_token_auth answers the
+# authorize POST with a 307 to /omniauth/:provider, which the browser follows as
+# GET; with OmniAuth 2's default (POST only) that handoff 404s.
+OmniAuth.config.allowed_request_methods = %i[get post]
+
 Rails.application.config.middleware.use OmniAuth::Builder do
   provider :google_oauth2, ENV.fetch('GOOGLE_OAUTH_CLIENT_ID', nil), ENV.fetch('GOOGLE_OAUTH_CLIENT_SECRET', nil), {
     provider_ignores_state: true
