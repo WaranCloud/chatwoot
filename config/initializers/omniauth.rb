@@ -26,7 +26,7 @@ Rails.application.config.middleware.use OmniAuth::Builder do
                secret: ENV.fetch('OIDC_CLIENT_SECRET'),
                redirect_uri: ENV.fetch(
                  'OIDC_REDIRECT_URI',
-                 "#{ENV.fetch('FRONTEND_URL', 'http://localhost:3000')}/auth/openid_connect/callback"
+                 "#{ENV.fetch('FRONTEND_URL', 'http://localhost:3000')}/omniauth/openid_connect/callback"
                )
              }
   end
