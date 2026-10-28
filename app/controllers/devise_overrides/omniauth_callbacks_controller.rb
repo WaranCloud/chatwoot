@@ -9,6 +9,22 @@ class DeviseOverrides::OmniauthCallbacksController < DeviseTokenAuth::OmniauthCa
     @resource.present? ? sign_in_user(redirect_url: oauth_redirect_url, sso_account_id: oauth_context['sso_account_id']) : sign_up_user
   end
 
+  # devise_token_auth persists omniauth.auth in a cookie-backed session before
+  # redirecting to /auth/:provider/callback. OIDC credentials and raw claims are
+  # too large (and unnecessary) for that handoff: carry only verified identity.
+  def redirect_callbacks
+    if params[:provider] == 'openid_connect' && (oidc_auth = request.env['omniauth.auth'])
+      info = oidc_auth['info'] || {}
+      request.env['omniauth.auth'] = {
+        'provider' => oidc_auth['provider'],
+        'uid' => oidc_auth['uid'],
+        'info' => info.slice('email', 'name', 'email_verified')
+      }
+    end
+
+    super
+  end
+
   private
 
   def sign_in_user(redirect_url: nil, sso_account_id: nil)
